@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/Header";
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
 import TramiteCard from "@/components/dashboard/TramiteCard";
@@ -10,12 +11,17 @@ import { useState } from "react";
 
 export default function DashboardPage() {
 
+  const router = useRouter();
   const [modalStep, setModalStep] = useState(null);
   const [selectedTramite, setSelectedTramite] = useState(null);
 
-  function handleSelectTramite(tramite) {
-    console.log('Trámite seleccionado:', tramite);
-    setIsModalOpen(false);
+  function closeModal() {
+    setModalStep(null);
+    setSelectedTramite(null);
+  }
+
+  function handleVerHistorial() {
+    router.push('/dasboard/tramites/historial');
   }
 
   function handleSelectTramite(tramite) {
@@ -71,6 +77,7 @@ export default function DashboardPage() {
               title="Ver mis Trámites"
               subtitle="Consulta el estado de tus trámites"
               ctaText="Ver Historial"
+              onClick={handleVerHistorial}
             />
             <TramiteCard
               icon="gear"
