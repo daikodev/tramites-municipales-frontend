@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Header from '@/components/dashboard/Header';
 import StatsPanel from '@/components/dashboard/StatsPanel';
 import TramiteHistorialCard from '@/components/dashboard/TramiteHistorialCard';
@@ -8,37 +9,46 @@ import { FileText } from 'lucide-react';
 
 export default function HistorialPage() {
   const router = useRouter();
+  const [tramites, setTramites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    completados: 0,
+    enProceso: 0,
+    pendientes: 0
+  });
 
-  // Datos mock para demostración
-  const tramites = [
-    {
-      id: 1,
-      numero: 'TRM-2025-001542',
-      tipo: 'Licencia de Funcionamiento',
-      descripcion: 'Solicitud de licencia de funcionamiento para local comercial',
-      fechaSolicitud: '14 de enero de 2025',
-      fechaActualizacion: '27 de enero de 2025',
-      estado: 'Completado',
-      categoria: 'Licencias y Permisos'
-    },
-    {
-      id: 2,
-      numero: 'TRM-2025-001541',
-      tipo: 'Certificado de domicilio',
-      descripcion: 'Certificado de domicilio para trámites legales',
-      fechaSolicitud: '21 de enero de 2025',
-      fechaActualizacion: '25 de enero de 2025',
-      estado: 'En proceso',
-      categoria: 'Registros y Documentos'
+  useEffect(() => {
+    cargarHistorial();
+  }, []);
+
+  async function cargarHistorial() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/applications/my', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTramites(data);
+        
+        // Calcular estadísticas
+        const total = data.length;
+        const completados = data.filter(t => t.status === 'COMPLETED' || t.estado === 'Completado').length;
+        const enProceso = data.filter(t => t.status === 'IN_PROGRESS' || t.estado === 'En proceso').length;
+        const pendientes = data.filter(t => t.status === 'PENDING' || t.estado === 'Pendiente').length;
+        
+        setStats({ total, completados, enProceso, pendientes });
+      }
+    } catch (error) {
+      console.error('Error al cargar historial:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const stats = {
-    total: 2,
-    completados: 1,
-    enProceso: 1,
-    pendientes: 1
-  };
+  }
 
   const handleVerDetalles = (id) => {
     router.push(`/dasboard/tramites/detalle/${id}`);
@@ -66,15 +76,25 @@ export default function HistorialPage() {
             Historial de trámites
             </h2>
           
-          <div className='space-y-4'>
-            {tramites.map((tramite) => (
-              <TramiteHistorialCard
-                key={tramite.id}
-                tramite={tramite}
-                onVerDetalles={handleVerDetalles}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-black/50">Cargando historial...</p>
+            </div>
+          ) : tramites.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-black/50">No tienes trámites registrados</p>
+            </div>
+          ) : (
+            <div className='space-y-4'>
+              {tramites.map((tramite) => (
+                <TramiteHistorialCard
+                  key={tramite.id}
+                  tramite={tramite}
+                  onVerDetalles={handleVerDetalles}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </section>
     </main>
