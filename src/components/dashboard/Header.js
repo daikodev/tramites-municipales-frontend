@@ -1,10 +1,12 @@
 'use client'
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 
 export default function Header() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -24,6 +26,19 @@ export default function Header() {
     { href: '/historial', label: 'Historial' },
     { href: '/faq', label: 'FAQ' },
   ];
+
+  const handleLogout = () => {
+    // Limpiar localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('applicationId');
+    localStorage.removeItem('currentRequisitos');
+    localStorage.removeItem('currentApplicationId');
+    
+    // Redirigir al login
+    router.push('/auth/login');
+  };
 
   return (
     <header className="bg-[#0b63c7] text-white shadow-[0_8px_18px_rgba(0,0,0,0.25)]">
@@ -61,6 +76,14 @@ export default function Header() {
             {initial}
           </span>
           <span className="text-sm opacity-95">{email}</span>
+          <button
+            onClick={handleLogout}
+            className="ml-2 p-2 hover:bg-white/20 rounded-md transition-colors"
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
@@ -85,6 +108,14 @@ export default function Header() {
                 </Link>
               ))}
             </nav>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold bg-white/10 hover:bg-white/20 transition"
+            >
+              <LogOut className="h-4 w-4" />
+              Cerrar Sesión
+            </button>
           </div>
         </div>
       )}

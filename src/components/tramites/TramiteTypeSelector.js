@@ -2,27 +2,15 @@
 
 import { Settings } from "lucide-react";
 
-export default function TramiteTypeSelector({ onSelect }) {
-  const tramites = [
-    {
-      id: "licencia-construccion",
-      nombre: "Licencia de Construcción",
-      descripcion: "Para obras nuevas y ampliaciones",
-      precio: 250.0,
-    },
-    {
-      id: "certificado-domiciliario",
-      nombre: "Certificado Domiciliario",
-      descripcion: "Comprueba tu residencia",
-      precio: 200.0,
-    },
-    {
-      id: "tramite-catastral",
-      nombre: "Trámite Catastral",
-      descripcion: "Consultas y modificaciones catastrales",
-      precio: 150.0,
-    },
-  ];
+export default function TramiteTypeSelector({ tramites = [], onSelect }) {
+  // Si no hay trámites, mostrar mensaje
+  if (!tramites || tramites.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-black/50">No hay trámites disponibles</p>
+      </div>
+    );
+  }
 
   return (
     
@@ -37,7 +25,11 @@ export default function TramiteTypeSelector({ onSelect }) {
           <button
             key={t.id}
             type="button"
-            onClick={() => onSelect?.(t)}
+            onClick={() => {
+              // Guardar el costo del trámite para usarlo en el pago
+              localStorage.setItem('tramiteCost', t.cost || t.precio || 0);
+              onSelect?.(t);
+            }}
             className="
               w-full
               rounded-[10px]
@@ -58,17 +50,17 @@ export default function TramiteTypeSelector({ onSelect }) {
 
               <div className="text-left">
                 <h3 className="text-[14px] font-semibold text-black leading-snug">
-                  {t.nombre}
+                  {t.name || t.nombre}
                 </h3>
                 <p className="text-[12px] text-black/35 leading-snug">
-                  {t.descripcion}
+                  {t.description || t.descripcion}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
               <span className="text-[30px] font-semibold text-[#0b3a77]">
-                S/ {t.precio.toFixed(2)}
+                S/ {parseFloat(t.cost || t.precio || 0).toFixed(2)}
               </span>
             </div>
           </button>

@@ -7,13 +7,39 @@ import InfoPanel from "@/components/dashboard/InfoPanel";
 import Modal from "@/components/ui/Modal";
 import TramiteTypeSelector from "@/components/tramites/TramiteTypeSelector";
 import FileUploadModal from "@/components/tramites/FileUpLoadModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function DashboardPage() {
 
   const router = useRouter();
   const [modalStep, setModalStep] = useState(null);
   const [selectedTramite, setSelectedTramite] = useState(null);
+  const [tramites, setTramites] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (modalStep === 'select') {
+      cargarTramites();
+    }
+  }, [modalStep]);
+
+  async function cargarTramites() {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/procedures');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setTramites(data);
+      } else {
+        console.error('Error al cargar trámites:', data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function closeModal() {
     setModalStep(null);
@@ -24,23 +50,24 @@ export default function DashboardPage() {
     router.push('/dasboard/tramites/historial');
   }
 
-  function handleSelectTramite(tramite) {
-    setSelectedTramite(tramite);
-    setModalStep('upload');
+  async function handleSelectTramite(tramite) {
+    try {
+      setSelectedTramite(tramite);
+      // Guardar información del trámite seleccionado
+      localStorage.setItem('selectedTramite', JSON.stringify(tramite));
+      localStorage.setItem('tramiteCost', tramite.cost || tramite.precio || 0);
+      setModalStep('upload');
+    } catch (error) {
+      console.error('Error al seleccionar trámite:', error);
+    }
   }
 
   function handleBackToSelection() {
     setModalStep('select');
     setSelectedTramite(null);
-}
-
-  function handleContinueUpload(files) {
-    console.log('Continuar con archivos:', files);
-    setModalStep(null);
-    setSelectedTramite(null);
   }
 
-  function closeModal() {
+  function handleContinueUpload(files) {
     setModalStep(null);
     setSelectedTramite(null);
   }
@@ -97,7 +124,13 @@ export default function DashboardPage() {
           onClose={closeModal}           
           title="Seleccionar Tipo de Trámite"
         >
-          <TramiteTypeSelector onSelect={handleSelectTramite} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-black/50">Cargando trámites...</p>
+            </div>
+          ) : (
+            <TramiteTypeSelector tramites={tramites} onSelect={handleSelectTramite} />
+          )}
         </Modal>
 
         <Modal

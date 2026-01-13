@@ -1,17 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/Header";
-import { MoveLeft, CreditCard, Wallet } from "lucide-react";
+import { MoveLeft, CreditCard, Wallet, Banknote } from "lucide-react";
 
 export default function StepTwoClient() {
   const router = useRouter();
-  const [method, setMethod] = useState("tarjeta");
+  const [method, setMethod] = useState("card");
+  const [loading, setLoading] = useState(false);
+  const [cost, setCost] = useState(0);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  // Guardar método de pago seleccionado
+  const handleMethodChange = (newMethod) => {
+    setMethod(newMethod);
+    localStorage.setItem('paymentMethod', newMethod);
+  };
+
+  useEffect(() => {
+    // Validar que exista applicationId
+    const applicationId = localStorage.getItem('applicationId');
+    if (!applicationId) {
+      setError('No se encontró la solicitud. Redirigiendo...');
+      setTimeout(() => router.push('/dasboard'), 2000);
+      return;
+    }
+
+    // Cargar el método de pago guardado si existe
+    const savedMethod = localStorage.getItem('paymentMethod');
+    if (savedMethod) {
+      setMethod(savedMethod);
+    }
+
+    // Cargar el costo del trámite desde localStorage
+    const savedCost = localStorage.getItem('tramiteCost');
+    if (savedCost) {
+      setCost(parseFloat(savedCost));
+    }
+  }, [router]);
+
+  async function handleSubmit(e) {
     e.preventDefault();
-     router.push("/dasboard/tramites/pagado");
+    setLoading(true);
+    setError("");
+
+    try {
+      const applicationId = localStorage.getItem('applicationId');
+      const token = localStorage.getItem('token');
+
+      if (!applicationId) {
+        throw new Error('No se encontró la solicitud');
+      }
+
+      // Mapear los métodos de pago al formato del backend
+      const paymentMethods = {
+        "tarjeta": "card",
+        "transferencia": "transfer",
+        "efectivo": "cash"
+      };
+
+      const response = await fetch(`/api/applications/${applicationId}/pay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: cost,
+          method: paymentMethods[method] || method,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al procesar pago');
+      }
+
+      router.push("/dasboard/tramites/pagado");
+    } catch (error) {
+      console.error('Error al procesar pago:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -60,6 +132,12 @@ export default function StepTwoClient() {
         </nav>
 
         <div className="mx-auto max-w-[980px] rounded-[10px] bg-[#e1e1e1] border border-black/20 shadow-[0_10px_18px_rgba(0,0,0,0.25)] px-8 py-7">
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-red-100 border border-red-300 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="rounded-[10px] bg-[#dcdcdc] border border-black/10 px-6 py-5 flex items-start justify-between gap-6">
               <div>
@@ -75,7 +153,7 @@ export default function StepTwoClient() {
 
               <div className="text-right">
                 <span className="text-[32px] font-semibold text-[#0b3a77]">
-                  S/ 250.00
+                  S/ {cost.toFixed(2)}
                 </span>
               </div>
             </div>
@@ -88,7 +166,7 @@ export default function StepTwoClient() {
               <div className="space-y-3">
                 <button
                   type="button"
-                  onClick={() => setMethod("tarjeta")}
+                  onClick={() => handleMethodChange("tarjeta")}
                   className={`
                     w-full rounded-[10px] border px-6 py-4
                     flex items-center gap-4 text-left
@@ -100,15 +178,20 @@ export default function StepTwoClient() {
                     }
                   `}
                 >
-                  <div className="h-12 w-12 rounded-[8px] bg-[#e6e6e6] border border-black/10 flex items-center justify-center">
-                    <CreditCard className="h-6 w-6 text-black/50" />
+                  <div
+                    className={`h-10 w-10 rounded-[8px] flex items-center justify-center border ${
+                      method === "tarjeta"
+                        ? "bg-[#0b3a77] text-white border-[#0b3a77]"
+                        : "bg-[#e6e6e6] text-black/60 border-black/10"
+                    }`}
+                  >
+                    <CreditCard className="h-5 w-5" />
                   </div>
-
-                  <div className="min-w-0">
-                    <h3 className="text-[14px] font-semibold text-black leading-snug">
+                  <div>
+                    <p className="text-[13px] font-semibold text-black">
                       Tarjeta de Crédito/Débito
-                    </h3>
-                    <p className="text-[12px] text-black/35 leading-snug">
+                    </p>
+                    <p className="text-[11px] text-black/40">
                       Visa, Mastercard, American Express
                     </p>
                   </div>
@@ -116,27 +199,67 @@ export default function StepTwoClient() {
 
                 <button
                   type="button"
-                  onClick={() => setMethod("billetera")}
+                  onClick={() => handleMethodChange("transferencia")}
                   className={`
                     w-full rounded-[10px] border px-6 py-4
                     flex items-center gap-4 text-left
                     transition
                     ${
-                      method === "billetera"
+                      method === "transferencia"
                         ? "bg-[#dcdcdc] border-black/20 shadow-[0_10px_18px_rgba(0,0,0,0.12)]"
                         : "bg-[#dcdcdc] border-black/10 hover:brightness-[0.99]"
                     }
                   `}
                 >
-                  <div className="h-12 w-12 rounded-[8px] bg-[#e6e6e6] border border-black/10 flex items-center justify-center">
-                    <Wallet className="h-6 w-6 text-black/50" />
+                  <div
+                    className={`h-10 w-10 rounded-[8px] flex items-center justify-center border ${
+                      method === "transferencia"
+                        ? "bg-[#0b3a77] text-white border-[#0b3a77]"
+                        : "bg-[#e6e6e6] text-black/60 border-black/10"
+                    }`}
+                  >
+                    <Wallet className="h-5 w-5" />
                   </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-black">
+                      Transferencia Bancaria
+                    </p>
+                    <p className="text-[11px] text-black/40">
+                      Depósito o transferencia a cuenta municipal
+                    </p>
+                  </div>
+                </button>
 
-                  <div className="min-w-0">
-                    <h3 className="text-[14px] font-semibold text-black leading-snug">
-                      Billetera Digital
-                    </h3>
-                    <p className="text-[12px] text-black/35 leading-snug">Yape</p>
+                <button
+                  type="button"
+                  onClick={() => handleMethodChange("efectivo")}
+                  className={`
+                    w-full rounded-[10px] border px-6 py-4
+                    flex items-center gap-4 text-left
+                    transition
+                    ${
+                      method === "efectivo"
+                        ? "bg-[#dcdcdc] border-black/20 shadow-[0_10px_18px_rgba(0,0,0,0.12)]"
+                        : "bg-[#dcdcdc] border-black/10 hover:brightness-[0.99]"
+                    }
+                  `}
+                >
+                  <div
+                    className={`h-10 w-10 rounded-[8px] flex items-center justify-center border ${
+                      method === "efectivo"
+                        ? "bg-[#0b3a77] text-white border-[#0b3a77]"
+                        : "bg-[#e6e6e6] text-black/60 border-black/10"
+                    }`}
+                  >
+                    <Banknote className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-black">
+                      Pago en Efectivo
+                    </p>
+                    <p className="text-[11px] text-black/40">
+                      Pago en caja de la municipalidad
+                    </p>
                   </div>
                 </button>
               </div>
@@ -153,9 +276,10 @@ export default function StepTwoClient() {
 
               <button
                 type="submit"
-                className="h-[34px] flex-1 rounded-[4px] bg-[#0b3a77] text-white text-[12px] font-semibold shadow-[0_3px_0_rgba(0,0,0,0.18)] hover:brightness-95 transition"
+                disabled={loading}
+                className="h-[34px] flex-1 rounded-[4px] bg-[#0b3a77] text-white text-[12px] font-semibold shadow-[0_3px_0_rgba(0,0,0,0.18)] hover:brightness-95 transition disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Confirmar Pago
+                {loading ? 'Procesando pago...' : 'Confirmar Pago'}
               </button>
             </div>
           </form>

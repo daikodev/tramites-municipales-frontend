@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Eye, EyeOff, LogIn } from "lucide-react";
+import { decodeJWT } from "@/lib/jwt";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -32,11 +33,24 @@ export default function LoginForm() {
         throw new Error(data?.message || "Credenciales incorrectas");
       }
 
-      console.log("EMAIL STATE:", email);
-      console.log("LOGIN RESPONSE:", data)
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
+      
+      // Extraer userId del token JWT
+      const payload = decodeJWT(data.token);
+      if (payload) {
+        // El userId puede estar en diferentes campos
+        const userId = payload.userId || payload.id || payload.sub;
+        if (userId) {
+          localStorage.setItem("userId", userId.toString());
+        }
+      }
+      
+      // Si el backend también envía userId directamente, usarlo
+      if (data.userId) {
+        localStorage.setItem("userId", data.userId.toString());
+      }
+      
       router.push("/dasboard");
     } catch (err) {
       setError(err?.message || "Error al iniciar sesión");
