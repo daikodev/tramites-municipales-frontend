@@ -38,6 +38,7 @@ export function clearTramiteState() {
     'tramiteFormData',
     'paymentMethod',
     'currentRequisitos',
+    'uploadProgress',
     'tramiteStep_files',
     'tramiteStep_form',
     'tramiteStep_payment'

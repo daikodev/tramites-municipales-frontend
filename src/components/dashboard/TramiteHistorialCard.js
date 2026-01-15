@@ -4,11 +4,10 @@ import {
   PauseCircle,
   Calendar,
   RefreshCcw,
-  Folder,
-  Eye
+  Folder
 } from 'lucide-react';
 
-export default function TramiteHistorialCard({ tramite, onVerDetalles }) {
+export default function TramiteHistorialCard({ tramite }) {
   const estadoConfig = {
     Completado: {
       icon: CheckCircle,
@@ -16,9 +15,21 @@ export default function TramiteHistorialCard({ tramite, onVerDetalles }) {
     },
     'En proceso': {
       icon: Clock,
-      badge: 'text-orange-600 bg-orange-100'
+      badge: 'text-blue-600 bg-blue-100'
     },
     Pendiente: {
+      icon: PauseCircle,
+      badge: 'text-orange-600 bg-orange-100'
+    },
+    Borrador: {
+      icon: PauseCircle,
+      badge: 'text-gray-600 bg-gray-100'
+    },
+    Rechazado: {
+      icon: PauseCircle,
+      badge: 'text-red-600 bg-red-100'
+    },
+    Cancelado: {
       icon: PauseCircle,
       badge: 'text-red-600 bg-red-100'
     }
@@ -68,16 +79,6 @@ export default function TramiteHistorialCard({ tramite, onVerDetalles }) {
           <Folder className="h-4 w-4" />
           {tramite.categoria}
         </div>
-      </div>
-
-      <div className="mt-4 flex justify-end">
-        <button
-          onClick={() => onVerDetalles(tramite.id)}
-          className="h-[30px] px-4 rounded-[4px] bg-[#0b3a77] text-white text-[12px] font-semibold flex items-center gap-2 hover:brightness-95 transition"
-        >
-          <Eye className="h-4 w-4" />
-          Ver Detalles
-        </button>
       </div>
     </article>
   );

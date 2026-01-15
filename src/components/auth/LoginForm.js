@@ -33,22 +33,38 @@ export default function LoginForm() {
         throw new Error(data?.message || "Credenciales incorrectas");
       }
 
+      // Guardar token
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
       
       // Extraer userId del token JWT
       const payload = decodeJWT(data.token);
       if (payload) {
-        // El userId puede estar en diferentes campos
-        const userId = payload.userId || payload.id || payload.sub;
+        // Buscar userId en diferentes campos posibles del JWT
+        let userId = null;
+        
+        // Intentar obtener de campos comunes
+        if (payload.userId) {
+          userId = payload.userId;
+        } else if (payload.id) {
+          userId = payload.id;
+        } else if (payload.sub && !payload.sub.includes('@')) {
+          // sub podría ser el email o el userId
+          userId = payload.sub;
+        }
+        
         if (userId) {
           localStorage.setItem("userId", userId.toString());
+          console.log('UserId extraído del token:', userId);
+        } else {
+          console.warn('No se pudo extraer userId del token');
         }
       }
       
-      // Si el backend también envía userId directamente, usarlo
+      // Si el backend también envía userId directamente, tiene prioridad
       if (data.userId) {
         localStorage.setItem("userId", data.userId.toString());
+        console.log('UserId del backend:', data.userId);
       }
       
       router.push("/dasboard");

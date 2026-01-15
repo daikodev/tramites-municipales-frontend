@@ -52,6 +52,12 @@ export default function DashboardPage() {
 
   async function handleSelectTramite(tramite) {
     try {
+      // Limpiar estado anterior antes de iniciar un nuevo trámite
+      localStorage.removeItem('applicationId');
+      localStorage.removeItem('currentRequisitos');
+      localStorage.removeItem('uploadProgress');
+      localStorage.removeItem('tramiteFormData');
+      
       setSelectedTramite(tramite);
       // Guardar información del trámite seleccionado
       localStorage.setItem('selectedTramite', JSON.stringify(tramite));
@@ -101,6 +107,7 @@ export default function DashboardPage() {
             />
             <TramiteCard
               icon="clock"
+              active
               title="Ver mis Trámites"
               subtitle="Consulta el estado de tus trámites"
               ctaText="Ver Historial"
