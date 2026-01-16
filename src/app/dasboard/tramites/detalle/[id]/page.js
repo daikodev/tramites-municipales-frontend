@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/dashboard/Header';
 import TramiteTimeline from '@/components/tramites/TramiteTimeline';
@@ -7,42 +8,176 @@ import { ArrowLeft, Download } from 'lucide-react';
 
 export default function DetalleTramitePage() {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const [tramite, setTramite] = useState(null);
+  const [historial, setHistorial] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const tramite = {
-    id,
-    numero: 'TRM-2025-001542',
-    tipo: 'Licencia de funcionamiento',
-    descripcion: 'Solicitud de licencia de funcionamiento para local comercial',
-    estado: 'Completado',
-    categoria: 'Licencias y Permisos',
-    fechaSolicitud: '14/02/2025',
-    fechaActualizacion: '27/02/2025',
-    informacionAdicional:
-      'Trámite aprobado exitosamente. Documento disponible para entregar.',
-  };
+  useEffect(() => {
+    if (params?.id) {
+      cargarDetalles(params.id);
+    }
+  }, [params]);
 
-  const historial = [
-    {
-      estado: 'Trámite solicitado',
-      fecha: '14 de enero de 2025',
-      descripcion: 'Tu solicitud fue registrada en el sistema',
-      isActive: true,
-    },
-    {
-      estado: 'En revisión',
-      fecha: '27 de enero de 2025',
-      descripcion:
-        'Tu trámite está siendo procesado por la dependencia correspondiente',
-      isActive: false,
-    },
-    {
-      estado: 'Trámite completado',
-      fecha: '27 de enero de 2025',
-      descripcion: 'Tu solicitud ha sido procesada exitosamente',
-      isActive: true,
-    },
-  ];
+  async function cargarDetalles(id) {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        router.push('/auth/login');
+        return;
+      }
+
+      // Cargar resumen del trámite
+      const summaryResponse = await fetch(`/api/applications/${id}/summary`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!summaryResponse.ok) {
+        throw new Error('Error al cargar detalles del trámite');
+      }
+
+      const summaryData = await summaryResponse.json();
+      console.log('Datos del summary:', summaryData);
+
+      // Cargar historial del trámite
+      const historyResponse = await fetch(`/api/applications/${id}/history`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      let historyData = [];
+      if (historyResponse.ok) {
+        historyData = await historyResponse.json();
+        console.log('Datos del historial:', historyData);
+      }
+
+      // Transformar datos del trámite - Manejo flexible de diferentes estructuras
+      const tramiteTransformado = {
+        id: summaryData.applicationId || summaryData.id || id,
+        numero: summaryData.applicationNumber || `TRM-${summaryData.applicationId || id}`,
+        tipo: summaryData.procedureName || summaryData.procedure?.name || 'Trámite',
+        descripcion: summaryData.procedure?.description || summaryData.description || 'Sin descripción',
+        estado: translateStatus(summaryData.status),
+        categoria: summaryData.procedure?.category || 'General',
+        fechaSolicitud: formatDate(summaryData.createAt || summaryData.createdAt || summaryData.applicationDate),
+        fechaActualizacion: formatDate(summaryData.updateAt || summaryData.updatedAt),
+        // Información adicional del usuario si viene
+        userName: summaryData.userName || summaryData.user?.name,
+        userEmail: summaryData.userEmail || summaryData.user?.email,
+        // Costo si viene
+        costo: summaryData.cost || summaryData.procedure?.cost,
+        // Información de pago si existe
+        payment: summaryData.payment,
+        // Archivos si vienen
+        files: summaryData.files || [],
+        // Formulario si viene
+        formData: summaryData.formData || summaryData.form,
+        informacionAdicional: summaryData.notes || summaryData.additionalInfo || getStatusMessage(summaryData.status),
+        _original: summaryData
+      };
+
+      setTramite(tramiteTransformado);
+
+      // Transformar historial
+      const historialTransformado = Array.isArray(historyData) ? historyData.map(item => ({
+        estado: translateStatus(item.status) || item.estado || 'Actualización',
+        fecha: formatDateLong(item.changeDate || item.timestamp || item.createdAt || item.fecha),
+        descripcion: item.description || item.notes || getHistoryDescription(item.status),
+        isActive: true
+      })) : [];
+
+      // Si no hay historial de la API, crear uno básico con los datos del summary
+      if (historialTransformado.length === 0) {
+        historialTransformado.push({
+          estado: tramiteTransformado.estado,
+          fecha: formatDateLong(summaryData.createAt || summaryData.createdAt),
+          descripcion: getHistoryDescription(summaryData.status),
+          isActive: true
+        });
+      }
+
+      setHistorial(historialTransformado);
+
+    } catch (err) {
+      console.error('Error al cargar detalles:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function translateStatus(status) {
+    const statusMap = {
+      'BORRADOR': 'Pendiente',
+      'ENVIADO': 'En proceso',
+      'PAGADO': 'En proceso',
+      'EN_REVISION': 'En proceso',
+      'OBSERVADO': 'Pendiente',
+      'APROBADO': 'Completado',
+      'RECHAZADO': 'Rechazado'
+    };
+    return statusMap[status] || 'Pendiente';
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return 'N/A';
+    }
+  }
+
+  function formatDateLong(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return 'N/A';
+    }
+  }
+
+  function getStatusMessage(status) {
+    const messages = {
+      'BORRADOR': 'Tu solicitud está en borrador y aún no ha sido enviada.',
+      'ENVIADO': 'Tu solicitud ha sido enviada y está siendo revisada.',
+      'PAGADO': 'El pago ha sido procesado correctamente.',
+      'EN_REVISION': 'Tu trámite está siendo procesado por la dependencia correspondiente.',
+      'OBSERVADO': 'Tu solicitud tiene observaciones que deben ser atendidas.',
+      'APROBADO': 'Trámite aprobado exitosamente. Documento disponible para entregar.',
+      'RECHAZADO': 'Tu solicitud ha sido rechazada.'
+    };
+    return messages[status] || 'Estado del trámite.';
+  }
+
+  function getHistoryDescription(status) {
+    const descriptions = {
+      'BORRADOR': 'Tu solicitud fue creada en el sistema',
+      'ENVIADO': 'Tu solicitud fue registrada en el sistema',
+      'PAGADO': 'El pago fue procesado correctamente',
+      'EN_REVISION': 'Tu trámite está siendo procesado por la dependencia correspondiente',
+      'OBSERVADO': 'Se han detectado observaciones en tu solicitud',
+      'APROBADO': 'Tu solicitud ha sido procesada exitosamente',
+      'RECHAZADO': 'Tu solicitud no pudo ser aprobada'
+    };
+    return descriptions[status] || 'Actualización del estado del trámite';
+  }
 
   const getEstadoColor = (estado) => {
     switch (estado) {
@@ -58,8 +193,43 @@ export default function DetalleTramitePage() {
   };
 
   const handleDescargar = () => {
-    console.log('Descargar comprobante');
+    // TODO: Implementar descarga de comprobante cuando el backend lo proporcione
+    if (!params?.id) return;
+    console.log('Descargar comprobante del trámite:', params.id);
+    alert('Función de descarga en desarrollo');
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#d9d9d9]">
+        <Header />
+        <section className="mx-auto max-w-[1120px] px-6 py-8">
+          <div className="text-center py-8">
+            <p className="text-sm text-black/50">Cargando detalles del trámite...</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (error || !tramite) {
+    return (
+      <main className="min-h-screen bg-[#d9d9d9]">
+        <Header />
+        <section className="mx-auto max-w-[1120px] px-6 py-8">
+          <div className="text-center py-8">
+            <p className="text-sm text-red-600">{error || 'No se pudo cargar el trámite'}</p>
+            <button
+              onClick={() => router.back()}
+              className="mt-4 text-sm text-blue-600 hover:underline"
+            >
+              Volver al historial
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#d9d9d9]">

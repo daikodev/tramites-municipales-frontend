@@ -96,9 +96,22 @@ export function loadUploadProgress() {
 }
 
 /**
- * Limpia el progreso de carga de archivos
+ * Limpia un archivo específico del progreso de carga
  */
-export function clearUploadProgress() {
+export function clearUploadProgress(requirementId) {
+  try {
+    const progress = JSON.parse(localStorage.getItem('uploadProgress') || '{}');
+    delete progress[requirementId];
+    localStorage.setItem('uploadProgress', JSON.stringify(progress));
+  } catch (error) {
+    console.error('Error al limpiar progreso de carga:', error);
+  }
+}
+
+/**
+ * Limpia todo el progreso de carga de archivos
+ */
+export function clearAllUploadProgress() {
   try {
     localStorage.removeItem('uploadProgress');
   } catch (error) {
