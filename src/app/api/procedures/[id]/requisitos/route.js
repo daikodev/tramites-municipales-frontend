@@ -7,15 +7,22 @@ export async function GET(req, { params }) {
     const { id } = await params;
     const token = req.headers.get('authorization');
 
+    if (!token) {
+      return NextResponse.json(
+        { message: "No autorizado: debes iniciar sesión" },
+        { status: 401 }
+      );
+    }
+
     const response = await fetch(`${API_URL}/procedures/${id}/requisitos`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...(token && { "Authorization": token }),
+        "Authorization": token,
       },
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       return NextResponse.json(

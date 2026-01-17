@@ -8,6 +8,13 @@ export async function POST(req, { params }) {
     const body = await req.json();
     const token = req.headers.get("authorization");
 
+    if (!token) {
+      return NextResponse.json(
+        { message: "No autorizado: debes iniciar sesión" },
+        { status: 401 }
+      );
+    }
+
     const response = await fetch(`${API_URL}/applications/${id}/pay`, {
       method: "POST",
       headers: {
@@ -17,7 +24,7 @@ export async function POST(req, { params }) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       return NextResponse.json(
