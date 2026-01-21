@@ -92,7 +92,7 @@ export default function DashboardPage() {
 
           <div className="
             grid grid-cols-1
-            md:grid-cols-[repeat(2,200px)]
+            md:grid-cols-[repeat(3,200px)]
             gap-x-12 gap-y-10
             md:justify-center
             justify-items-center
@@ -113,7 +113,12 @@ export default function DashboardPage() {
               ctaText="Ver Historial"
               onClick={handleVerHistorial}
             />
-            {/* FAQ ocultado temporalmente - no implementado */}
+            <TramiteCard
+              icon="gear"
+              title="Preguntas Frecuentes"
+              subtitle="Resuelve tus dudas sobre trámites"
+              ctaText="Ver FAQ"
+            />
           </div>
         </section>
 

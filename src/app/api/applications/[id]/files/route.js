@@ -6,14 +6,6 @@ export async function POST(req, { params }) {
   try {
     const { id } = await params;
     const token = req.headers.get("authorization");
-
-    if (!token) {
-      return NextResponse.json(
-        { message: "No autorizado: debes iniciar sesión" },
-        { status: 401 }
-      );
-    }
-
     const formData = await req.formData();
 
     const response = await fetch(`${API_URL}/applications/${id}/files`, {
@@ -24,7 +16,7 @@ export async function POST(req, { params }) {
       body: formData,
     });
 
-    const data = await response.json().catch(() => ({}));
+    const data = await response.json();
 
     if (!response.ok) {
       return NextResponse.json(

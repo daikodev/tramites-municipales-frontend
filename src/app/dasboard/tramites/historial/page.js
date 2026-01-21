@@ -10,9 +10,7 @@ import { FileText, Search, ChevronLeft, ChevronRight, Home } from 'lucide-react'
 export default function HistorialPage() {
   const router = useRouter();
   const [tramites, setTramites] = useState([]);
-  const [tramitesFiltrados, setTramitesFiltrados] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState('todos');
   const [stats, setStats] = useState({
     total: 0,
     completados: 0,
@@ -30,18 +28,8 @@ export default function HistorialPage() {
     cargarHistorial();
   }, []);
 
-  useEffect(() => {
-    // Aplicar filtro cuando cambia el estado seleccionado
-    if (filtroEstado === 'todos') {
-      setTramitesFiltrados(tramites);
-    } else {
-      setTramitesFiltrados(tramites.filter(t => t.estado === filtroEstado));
-    }
-  }, [filtroEstado, tramites]);
-
   async function cargarHistorial() {
     try {
-      setLoading(true);
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
       
@@ -124,23 +112,8 @@ export default function HistorialPage() {
           router.push('/auth/login');
         }
       }
-
-      const data = await response.json();
-      console.log('Trámites recibidos:', data);
-      
-      setTramites(Array.isArray(data) ? data : []);
-      
-      // Calcular estadísticas
-      const tramitesArray = Array.isArray(data) ? data : [];
-      const total = tramitesArray.length;
-      const completados = tramitesArray.filter(t => t.estado === 'Completado').length;
-      const enProceso = tramitesArray.filter(t => t.estado === 'En proceso').length;
-      const pendientes = tramitesArray.filter(t => t.estado === 'Pendiente').length;
-      
-      setStats({ total, completados, enProceso, pendientes });
     } catch (error) {
       console.error('Error al cargar historial:', error);
-      setTramites([]);
     } finally {
       setLoading(false);
     }
@@ -342,7 +315,7 @@ export default function HistorialPage() {
             <div className='space-y-4'>
               {tramitesPaginados.map((tramite) => (
                 <TramiteHistorialCard
-                  key={tramite.id || `tramite-${index}`}
+                  key={tramite.id}
                   tramite={tramite}
                 />
               ))}

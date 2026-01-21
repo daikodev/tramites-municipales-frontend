@@ -1,15 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderDown, FolderUp, CheckCircle2, X } from "lucide-react";
-import { saveUploadProgress, loadUploadProgress, clearUploadProgress } from '@/lib/tramiteState';
+import { FolderDown, FolderUp, CheckCircle2 } from "lucide-react";
+import { saveUploadProgress, loadUploadProgress } from '@/lib/tramiteState';
 
 export default function FileUploadModal({ tramite, onBack, onContinue }) {
   const [files, setFiles] = useState({});
   const [requisitos, setRequisitos] = useState([]);
   const [uploading, setUploading] = useState({});
   const [uploaded, setUploaded] = useState({});
-  const [uploadedFileIds, setUploadedFileIds] = useState({}); // Guardar el ID del archivo en el backend
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [applicationId, setApplicationId] = useState(null);
@@ -113,29 +112,11 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
       return;
     }
 
-    // Verificar si ya hay una subida en progreso
-    const isAnyUploading = Object.values(uploading).some(status => status === true);
-    if (isAnyUploading) {
-      setError('Por favor espera a que termine la subida actual antes de subir otro archivo');
-      // Limpiar el archivo seleccionado
-      setFiles((prev) => {
-        const newFiles = { ...prev };
-        delete newFiles[requirementId];
-        return newFiles;
-      });
-      return;
-    }
-
     try {
       setUploading((prev) => ({ ...prev, [requirementId]: true }));
       setError(null);
       
       const token = localStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('No autorizado: debes iniciar sesión');
-      }
-      
       const formData = new FormData();
       formData.append('requirementId', requirementId);
       formData.append('file', file);
@@ -153,12 +134,9 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
         throw new Error(errorData.message || 'Error al subir archivo');
       }
       
-      const responseData = await response.json();
-      
-      // Marcar como subido y guardar progreso con el ID del archivo
+      // Marcar como subido y guardar progreso
       const newUploaded = { ...uploaded, [requirementId]: true };
       setUploaded(newUploaded);
-      setUploadedFileIds((prev) => ({ ...prev, [requirementId]: responseData.id || responseData.fileId }));
       saveUploadProgress(requirementId, true);
       
     } catch (err) {
@@ -171,65 +149,6 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
       });
     } finally {
       setUploading((prev) => ({ ...prev, [requirementId]: false }));
-    }
-  }
-
-  async function handleDeleteFile(requirementId) {
-    if (!applicationId) {
-      setError('No se encontró la solicitud');
-      return;
-    }
-
-    try {
-      setError(null);
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('No autorizado: debes iniciar sesión');
-      }
-      
-      const fileId = uploadedFileIds[requirementId];
-
-      // Si tenemos el ID del archivo, intentar eliminarlo del backend
-      if (fileId) {
-        const response = await fetch(`/api/applications/${applicationId}/files/${fileId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.warn('No se pudo eliminar del backend:', errorData.message);
-          // Continuar de todos modos para permitir resubir
-        }
-      }
-
-      // Limpiar estados locales
-      setUploaded((prev) => {
-        const newUploaded = { ...prev };
-        delete newUploaded[requirementId];
-        return newUploaded;
-      });
-      
-      setUploadedFileIds((prev) => {
-        const newIds = { ...prev };
-        delete newIds[requirementId];
-        return newIds;
-      });
-      
-      setFiles((prev) => {
-        const newFiles = { ...prev };
-        delete newFiles[requirementId];
-        return newFiles;
-      });
-      
-      clearUploadProgress(requirementId);
-      
-    } catch (err) {
-      console.error('Error al eliminar archivo:', err);
-      setError(`Error al eliminar archivo: ${err.message}`);
     }
   }
 
@@ -307,27 +226,43 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
       </div>
 
       <div className="space-y-4">
-        {requisitos.map((req) => {
-          // Verificar si hay alguna subida en progreso
-          const isAnyUploading = Object.values(uploading).some(status => status === true);
-          const isThisUploading = uploading[req.id];
-          const isThisUploaded = uploaded[req.id];
-          // Deshabilitar solo si está subiendo alguno
-          const shouldDisable = isAnyUploading;
+        {requisitos.map((req) => (
+          <div
+            key={req.id}
+            className="grid grid-cols-[1.4fr_0.8fr_0.8fr] gap-x-6 text-[14px] pb-5 font-semibold text-black items-center"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-black/40">
+                {req.name || req.nombre}
+              </span>
+              {uploaded[req.id] && (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              )}
+            </div>
 
-          return (
-            <div
-              key={req.id}
-              className="grid grid-cols-[1.4fr_0.8fr_0.8fr] gap-x-6 text-[14px] pb-5 font-semibold text-black items-center"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-[13px] text-black/40">
-                  {req.name || req.nombre}
-                </span>
-                {isThisUploaded && (
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                )}
-              </div>
+            <div className="flex justify-center">
+              {req.formatId ? (
+                <button
+                  type="button"
+                  onClick={() => handleDescargarFormato(req.formatId, req.name)}
+                  className="
+                    h-[30px] w-[120px]
+                    rounded-[4px]
+                    border border-black/10
+                    bg-[#e6e6e6]
+                    text-[12px] font-semibold text-black/60
+                    flex items-center justify-center gap-2
+                    hover:bg-[#d0d0d0]
+                    transition
+                  "
+                >
+                  <FolderDown className="h-4 w-4" />
+                  Descargar
+                </button>
+              ) : (
+                <span className="text-[11px] text-black/30">Sin formato</span>
+              )}
+            </div>
 
             <div className="flex justify-center">
               <label className={`
@@ -359,69 +294,15 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
                     Subido
                   </>
                 ) : (
-                  <span className="text-[11px] text-black/30">Sin formato</span>
+                  <>
+                    <FolderUp className="h-4 w-4" />
+                    Subir
+                  </>
                 )}
-              </div>
-
-              <div className="flex justify-center items-center gap-2">
-                <label className={`
-                  h-[30px] w-[120px]
-                  rounded-[4px]
-                  border border-black/10
-                  text-[12px] font-semibold
-                  flex items-center justify-center gap-2
-                  transition
-                  ${shouldDisable
-                    ? 'bg-gray-300 text-black/40 cursor-not-allowed' 
-                    : 'bg-[#e6e6e6] text-black/60 cursor-pointer hover:bg-[#d0d0d0]'
-                  }
-                  ${isThisUploaded && !isThisUploading && 'bg-green-100 text-green-700 border-green-300'}
-                `}>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className="hidden"
-                    disabled={shouldDisable}
-                    onChange={(e) => handleFileChange(req.id, e.target.files?.[0])}
-                  />
-                  {isThisUploading ? (
-                    'Subiendo...'
-                  ) : isThisUploaded ? (
-                    <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      Subido
-                    </>
-                  ) : (
-                    <>
-                      <FolderUp className="h-4 w-4" />
-                      Subir
-                    </>
-                  )}
-                </label>
-                
-                {isThisUploaded && !isThisUploading && (
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteFile(req.id)}
-                    className="
-                      h-[30px] w-[30px]
-                      rounded-[4px]
-                      border border-red-300
-                      bg-red-50
-                      text-red-600
-                      flex items-center justify-center
-                      hover:bg-red-100
-                      transition
-                    "
-                    title="Eliminar archivo"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+              </label>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
 
       <div className="flex items-center gap-4 mt-20">

@@ -89,82 +89,43 @@ export default function RegisterForm() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+
+    const nameOk = /^[\p{L}]+(?:\s+[\p{L}]+)*$/u.test(formData.nombres.trim());
+    const lastNameOk = /^[\p{L}]+(?:\s+[\p{L}]+)*$/u.test(formData.apellidos.trim());
+
+    if (!nameOk) return setError("El nombre solo debe contener letras.");
+    if (!lastNameOk) return setError("Los apellidos solo deben contener letras.");
+
+    const doc = formData.nDocumento.trim();
+    if (!/^\d+$/.test(doc)) return setError("El número de documento solo debe contener números.");
+    if (doc.length !== docLen) {
+      return setError(`${docLabel} debe tener exactamente ${docLen} dígitos.`);
+    }
+
+    const phone = formData.telefono.trim();
+    if (!/^\d+$/.test(phone)) return setError("El teléfono solo debe contener números.");
+    if (!phone) return setError("El teléfono es obligatorio.");
+
+    if (!formData.aceptaTerminos) return setError("Debes aceptar los términos y condiciones.");
+    if (formData.password !== formData.confirmPassword) return setError("Las contraseñas no coinciden.");
+    if (!formData.direccion?.trim()) return setError("La dirección es obligatoria.");
+    if (!formData.fechaNacimiento) return setError("La fecha de nacimiento es obligatoria.");
+
+    const birth = new Date(formData.fechaNacimiento + "T00:00:00");
+    const today = new Date();
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+
+    if (age < 18) {
+    setError("Debes ser mayor de 18 años para registrarte.");
+    return;
+  }
+
     setLoading(true);
 
     try {
-      // Validaciones
-      const nameOk = /^[\p{L}]+(?:\s+[\p{L}]+)*$/u.test(formData.nombres.trim());
-      const lastNameOk = /^[\p{L}]+(?:\s+[\p{L}]+)*$/u.test(formData.apellidos.trim());
-
-      if (!nameOk) {
-        setError("El nombre solo debe contener letras.");
-        return;
-      }
-      if (!lastNameOk) {
-        setError("Los apellidos solo deben contener letras.");
-        return;
-      }
-
-      const doc = formData.nDocumento.trim();
-      if (!/^\d+$/.test(doc)) {
-        setError("El número de documento solo debe contener números.");
-        return;
-      }
-      if (doc.length !== docLen) {
-        setError(`${docLabel} debe tener exactamente ${docLen} dígitos.`);
-        return;
-      }
-
-      const phone = formData.telefono.trim();
-      if (!/^\d+$/.test(phone)) {
-        setError("El teléfono solo debe contener números.");
-        return;
-      }
-      if (!phone) {
-        setError("El teléfono es obligatorio.");
-        return;
-      }
-
-      if (!formData.aceptaTerminos) {
-        setError("Debes aceptar los términos y condiciones.");
-        return;
-      }
-      
-      if (!formData.direccion?.trim()) {
-        setError("La dirección es obligatoria.");
-        return;
-      }
-      
-      if (!formData.fechaNacimiento) {
-        setError("La fecha de nacimiento es obligatoria.");
-        return;
-      }
-
-      // Validar contraseñas
-      if (!formData.password || formData.password.length < 6) {
-        setError("La contraseña debe tener al menos 6 caracteres.");
-        return;
-      }
-      
-      if (formData.password !== formData.confirmPassword) {
-        setError("Las contraseñas no coinciden.");
-        return;
-      }
-
-      // Validar edad
-      const birth = new Date(formData.fechaNacimiento + "T00:00:00");
-      const today = new Date();
-
-      let age = today.getFullYear() - birth.getFullYear();
-      const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-
-      if (age < 18) {
-        setError("Debes ser mayor de 18 años para registrarte.");
-        return;
-      }
-
-      // Todas las validaciones pasaron, proceder con el registro
       const payload = {
         name: formData.nombres.trim(),
         lastName: formData.apellidos.trim(),
@@ -419,17 +380,6 @@ export default function RegisterForm() {
             {loading ? "Registrando..." : "Registrarse"}
             <CheckCircle className="h-4 w-4" />
           </button>
-
-          <div className="text-center text-sm text-black/70 mt-2">
-            ¿Ya tienes una cuenta?{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/auth/login")}
-              className="text-[#0b3a77] font-semibold hover:underline"
-            >
-              Inicia sesión
-            </button>
-          </div>
         </div>
       </div>
     </form>

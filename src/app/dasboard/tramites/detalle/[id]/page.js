@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Header from '@/components/dashboard/Header';
@@ -207,43 +206,8 @@ export default function DetalleTramitePage() {
   };
 
   const handleDescargar = () => {
-    // TODO: Implementar descarga de comprobante cuando el backend lo proporcione
-    if (!params?.id) return;
-    console.log('Descargar comprobante del trámite:', params.id);
-    alert('Función de descarga en desarrollo');
+    console.log('Descargar comprobante');
   };
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[#d9d9d9]">
-        <Header />
-        <section className="mx-auto max-w-[1120px] px-6 py-8">
-          <div className="text-center py-8">
-            <p className="text-sm text-black/50">Cargando detalles del trámite...</p>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  if (error || !tramite) {
-    return (
-      <main className="min-h-screen bg-[#d9d9d9]">
-        <Header />
-        <section className="mx-auto max-w-[1120px] px-6 py-8">
-          <div className="text-center py-8">
-            <p className="text-sm text-red-600">{error || 'No se pudo cargar el trámite'}</p>
-            <button
-              onClick={() => router.back()}
-              className="mt-4 text-sm text-blue-600 hover:underline"
-            >
-              Volver al historial
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#d9d9d9]">
