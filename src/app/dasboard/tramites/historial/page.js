@@ -80,8 +80,8 @@ export default function HistorialPage() {
             const id = t.applicationId || t.id || t.id_solicitud;
             const procedureName = t.procedureName || "Trámite Municipal";
             const status = t.status || "DESCONOCIDO";
-            const createdAt = t.createdAt;
-            const updatedAt = t.updatedAt;
+            const createdAt = t.createAt || t.createdAt;
+            const updatedAt = t.updateAt || t.updatedAt;
 
             return {
               id,
