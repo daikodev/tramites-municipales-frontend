@@ -325,7 +325,7 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
                   flex items-center justify-center gap-2
                   transition
                   ${
-                    uploading[req.id]
+                    uploading[req.id] || Object.values(uploading).some((v) => v)
                       ? "bg-gray-300 text-black/40 cursor-not-allowed"
                       : "bg-[#e6e6e6] text-black/60 cursor-pointer hover:bg-[#d0d0d0]"
                   }
@@ -335,13 +335,19 @@ export default function FileUploadModal({ tramite, onBack, onContinue }) {
                     type="file"
                     accept=".pdf,application/pdf"
                     className="hidden"
-                    disabled={uploading[req.id] || uploaded[req.id]}
+                    disabled={
+                      uploading[req.id] ||
+                      uploaded[req.id] ||
+                      Object.values(uploading).some((v) => v)
+                    }
                     onChange={(e) =>
                       handleFileChange(req.id, e.target.files?.[0])
                     }
                   />
                   {uploading[req.id] ? (
                     "Subiendo..."
+                  ) : Object.values(uploading).some((v) => v) ? (
+                    "Espere..."
                   ) : (
                     <>
                       <FolderUp className="h-4 w-4" />
