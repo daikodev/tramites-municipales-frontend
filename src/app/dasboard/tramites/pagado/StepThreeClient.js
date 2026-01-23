@@ -81,8 +81,13 @@ export default function StepThreeClient() {
             localStorage.getItem("userName") ||
             "Usuario";
 
+      // Usar code en lugar de id
+      const code =
+        data.application?.code ||
+        `TR-${String(data.application?.id || applicationId).padStart(6, "0")}`;
+
       setSummary({
-        applicationNumber: data.application?.id || applicationId,
+        applicationNumber: code,
         procedureName:
           data.application?.procedure ||
           selectedTramite.name ||
