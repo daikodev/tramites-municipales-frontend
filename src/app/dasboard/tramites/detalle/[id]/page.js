@@ -155,7 +155,7 @@ export default function DetalleTramitePage() {
     const estados = {
       BORRADOR: "Borrador",
       ENVIADO: "Enviado",
-      PAGADO: "Pagado",
+      PAGADO: "En Proceso",
       EN_REVISION: "En Proceso",
       OBSERVADO: "En Proceso",
       APROBADO: "Completado",
