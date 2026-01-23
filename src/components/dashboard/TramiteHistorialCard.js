@@ -1,38 +1,37 @@
+import { useRouter } from "next/navigation";
 import {
   CheckCircle,
   Clock,
   PauseCircle,
   Calendar,
   RefreshCcw,
-  Folder
-} from 'lucide-react';
+  Folder,
+  Eye,
+} from "lucide-react";
 
 export default function TramiteHistorialCard({ tramite }) {
+  const router = useRouter();
   const estadoConfig = {
     Completado: {
       icon: CheckCircle,
-      badge: 'text-green-600 bg-green-100'
+      badge: "text-green-700 bg-green-100",
     },
-    'En proceso': {
+    "En Proceso": {
       icon: Clock,
-      badge: 'text-blue-600 bg-blue-100'
+      badge: "text-orange-700 bg-orange-100",
     },
-    Pendiente: {
-      icon: PauseCircle,
-      badge: 'text-orange-600 bg-orange-100'
+    "En proceso": {
+      icon: Clock,
+      badge: "text-orange-700 bg-orange-100",
     },
-    Borrador: {
-      icon: PauseCircle,
-      badge: 'text-gray-600 bg-gray-100'
+    Observado: {
+      icon: Clock,
+      badge: "text-orange-700 bg-orange-100",
     },
     Rechazado: {
       icon: PauseCircle,
-      badge: 'text-red-600 bg-red-100'
+      badge: "text-red-700 bg-red-100",
     },
-    Cancelado: {
-      icon: PauseCircle,
-      badge: 'text-red-600 bg-red-100'
-    }
   };
 
   const EstadoIcon = estadoConfig[tramite.estado]?.icon || PauseCircle;
@@ -60,9 +59,7 @@ export default function TramiteHistorialCard({ tramite }) {
         </span>
       </div>
 
-      <p className="mt-3 text-[13px] text-black/60">
-        {tramite.descripcion}
-      </p>
+      <p className="mt-3 text-[13px] text-black/60">{tramite.descripcion}</p>
 
       <div className="mt-4 flex flex-wrap gap-6 text-[12px] text-black/50">
         <div className="flex items-center gap-2">
@@ -79,6 +76,18 @@ export default function TramiteHistorialCard({ tramite }) {
           <Folder className="h-4 w-4" />
           {tramite.categoria}
         </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-black/10">
+        <button
+          onClick={() =>
+            router.push(`/dasboard/tramites/detalle/${tramite.id}`)
+          }
+          className="h-[32px] px-4 rounded-md bg-[#0b3a77] text-white text-[12px] font-semibold flex items-center gap-2 hover:brightness-95 shadow-md cursor-pointer scale-100 active:scale-95 transition-all ease-in-out"
+        >
+          <Eye className="h-4 w-4" />
+          Ver detalles
+        </button>
       </div>
     </article>
   );

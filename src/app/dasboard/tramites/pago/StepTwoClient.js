@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/Header";
 import { MoveLeft, CreditCard, Wallet, Banknote } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function StepTwoClient() {
   const router = useRouter();
+  useAuth();
   const [method, setMethod] = useState(null);
   const [loading, setLoading] = useState(false);
   const [cost, setCost] = useState(0);
@@ -15,26 +17,26 @@ export default function StepTwoClient() {
   // Guardar método de pago seleccionado
   const handleMethodChange = (newMethod) => {
     setMethod(newMethod);
-    localStorage.setItem('paymentMethod', newMethod);
+    localStorage.setItem("paymentMethod", newMethod);
   };
 
   useEffect(() => {
     // Validar que exista applicationId
-    const applicationId = localStorage.getItem('applicationId');
+    const applicationId = localStorage.getItem("applicationId");
     if (!applicationId) {
-      setError('No se encontró la solicitud. Redirigiendo...');
-      setTimeout(() => router.push('/dasboard'), 2000);
+      setError("No se encontró la solicitud. Redirigiendo...");
+      setTimeout(() => router.push("/dasboard"), 2000);
       return;
     }
 
     // Cargar el método de pago guardado si existe
-    const savedMethod = localStorage.getItem('paymentMethod');
+    const savedMethod = localStorage.getItem("paymentMethod");
     if (savedMethod) {
       setMethod(savedMethod);
     }
 
     // Cargar el costo del trámite desde localStorage
-    const savedCost = localStorage.getItem('tramiteCost');
+    const savedCost = localStorage.getItem("tramiteCost");
     if (savedCost) {
       setCost(parseFloat(savedCost));
     }
@@ -42,7 +44,7 @@ export default function StepTwoClient() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    
+
     // Validar que haya un método seleccionado
     if (!method) {
       setError("Por favor, selecciona un método de pago antes de continuar");
@@ -53,25 +55,25 @@ export default function StepTwoClient() {
     setError("");
 
     try {
-      const applicationId = localStorage.getItem('applicationId');
-      const token = localStorage.getItem('token');
+      const applicationId = localStorage.getItem("applicationId");
+      const token = localStorage.getItem("token");
 
       if (!applicationId) {
-        throw new Error('No se encontró la solicitud');
+        throw new Error("No se encontró la solicitud");
       }
 
       // Mapear los métodos de pago al formato del backend
       const paymentMethods = {
-        "tarjeta": "card",
-        "transferencia": "transfer",
-        "efectivo": "cash"
+        tarjeta: "card",
+        transferencia: "transfer",
+        efectivo: "cash",
       };
 
       const response = await fetch(`/api/applications/${applicationId}/pay`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           amount: cost,
@@ -81,12 +83,12 @@ export default function StepTwoClient() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al procesar pago');
+        throw new Error(errorData.message || "Error al procesar pago");
       }
 
       router.push("/dasboard/tramites/pagado");
     } catch (error) {
-      console.error('Error al procesar pago:', error);
+      console.error("Error al procesar pago:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -103,12 +105,14 @@ export default function StepTwoClient() {
             type="button"
             aria-label="Atrás"
             onClick={() => router.back()}
-            className="h-10 w-10 rounded-[10px] bg-transparent text-black/80 hover:bg-black/5 transition flex items-center justify-center"
+            className="h-10 w-10 rounded-[10px] bg-transparent text-black/80 hover:bg-black/5 flex items-center justify-center cursor-pointer scale-100 active:scale-95 transition-all ease-in-out"
           >
             <MoveLeft />
           </button>
 
-          <h1 className="text-[34px] font-semibold text-black">Nuevo trámite</h1>
+          <h1 className="text-[34px] font-semibold text-black">
+            Nuevo trámite
+          </h1>
         </div>
 
         <nav aria-label="Progreso" className="mb-6">
@@ -177,7 +181,7 @@ export default function StepTwoClient() {
                   className={`
                     w-full rounded-[10px] border px-6 py-4
                     flex items-center gap-4 text-left
-                    transition
+                    cursor-pointer scale-100 active:scale-95 transition-all ease-in-out
                     ${
                       method === "tarjeta"
                         ? "bg-[#dcdcdc] border-black/20 shadow-[0_10px_18px_rgba(0,0,0,0.12)]"
@@ -210,7 +214,7 @@ export default function StepTwoClient() {
                   className={`
                     w-full rounded-[10px] border px-6 py-4
                     flex items-center gap-4 text-left
-                    transition
+                    cursor-pointer scale-100 active:scale-95 transition-all ease-in-out
                     ${
                       method === "transferencia"
                         ? "bg-[#dcdcdc] border-black/20 shadow-[0_10px_18px_rgba(0,0,0,0.12)]"
@@ -243,7 +247,7 @@ export default function StepTwoClient() {
                   className={`
                     w-full rounded-[10px] border px-6 py-4
                     flex items-center gap-4 text-left
-                    transition
+                    cursor-pointer scale-100 active:scale-95 transition-all ease-in-out
                     ${
                       method === "efectivo"
                         ? "bg-[#dcdcdc] border-black/20 shadow-[0_10px_18px_rgba(0,0,0,0.12)]"
@@ -276,7 +280,7 @@ export default function StepTwoClient() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="h-[34px] w-[90px] rounded-[4px] border border-black/10 bg-[#e6e6e6] text-[12px] font-semibold text-black/90"
+                className="h-[34px] w-[90px] rounded-md border border-black/10 bg-[#e6e6e6] text-[12px] font-semibold text-black/90 cursor-pointer scale-100 active:scale-95 transition-all ease-in-out"
               >
                 Atrás
               </button>
@@ -284,9 +288,9 @@ export default function StepTwoClient() {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-[34px] flex-1 rounded-[4px] bg-[#0b3a77] text-white text-[12px] font-semibold shadow-[0_3px_0_rgba(0,0,0,0.18)] hover:brightness-95 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                className="h-[34px] flex-1 rounded-md bg-[#0b3a77] text-white text-[12px] font-semibold shadow-[0_3px_0_rgba(0,0,0,0.18)] hover:brightness-95 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer scale-100 active:scale-95 transition-all ease-in-out"
               >
-                {loading ? 'Procesando pago...' : 'Confirmar Pago'}
+                {loading ? "Procesando pago..." : "Confirmar Pago"}
               </button>
             </div>
           </form>

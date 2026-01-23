@@ -13,9 +13,7 @@ export default function TramiteTypeSelector({ tramites = [], onSelect }) {
   }
 
   return (
-    
     <div className="space-y-4">
-        
       <p className="text-[13px] text-black/40">
         Selecciona el tipo de trámite que deseas realizar:
       </p>
@@ -27,7 +25,7 @@ export default function TramiteTypeSelector({ tramites = [], onSelect }) {
             type="button"
             onClick={() => {
               // Guardar el costo del trámite para usarlo en el pago
-              localStorage.setItem('tramiteCost', t.cost || t.precio || 0);
+              localStorage.setItem("tramiteCost", t.cost || t.precio || 0);
               onSelect?.(t);
             }}
             className="
@@ -40,13 +38,13 @@ export default function TramiteTypeSelector({ tramites = [], onSelect }) {
               hover:brightness-[0.98]
               transition
               shadow-[0_18px_40px_rgba(0,0,0,0.2)]
+              cursor-pointer scale-100 active:scale-95 ease-in-out
             "
           >
-
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-[8px] bg-[#dcdcdc] border border-black/10 flex items-center justify-center">
+              {/* <div className="h-12 w-12 rounded-[8px] bg-[#dcdcdc] border border-black/10 flex items-center justify-center">
                 <Settings className="h-6 w-6 text-[#0b3a77]" />
-              </div>
+              </div> */}
 
               <div className="text-left">
                 <h3 className="text-[14px] font-semibold text-black leading-snug">

@@ -6,7 +6,14 @@ const ICONS = {
   gear: Settings,
 };
 
-export default function TramiteCard({ title, subtitle, ctaText, onClick, icon = "plus", active }) {
+export default function TramiteCard({
+  title,
+  subtitle,
+  ctaText,
+  onClick,
+  icon = "plus",
+  active,
+}) {
   const Icon = ICONS[icon] ?? Plus;
 
   return (
@@ -33,18 +40,23 @@ export default function TramiteCard({ title, subtitle, ctaText, onClick, icon = 
         </div>
       </div>
 
-      <h3 className="text-[15px] font-semibold text-black leading-snug">{title}</h3>
+      <h3 className="text-[15px] font-semibold text-black leading-snug">
+        {title}
+      </h3>
       <p className="text-[13px] text-black/60 mt-2 min-h-[34px]">{subtitle}</p>
 
       <button
         onClick={onClick}
         type="button"
         className={`
-          mt-5 w-full h-[30px] rounded-[4px] text-[12px] font-semibold
+          mt-5 w-full h-[30px] rounded-md text-[12px] font-semibold
           border border-black/10
           ${active ? "bg-[#0b3a77] text-white" : "bg-[#dcdcdc] text-black/70"}
           shadow-[0_3px_0_rgba(0,0,0,0.18)]
-          hover:brightness-95 transition
+          hover:brightness-95
+          cursor-pointer
+          scale-100 active:scale-95
+          transition-all ease-in-out
         `}
       >
         {ctaText}

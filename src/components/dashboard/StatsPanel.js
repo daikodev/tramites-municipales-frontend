@@ -1,27 +1,27 @@
-import { ClipboardList, CheckCircle, Clock, PauseCircle } from 'lucide-react';
+import { ClipboardList, CheckCircle, Clock, XCircle } from "lucide-react";
 
 export default function StatsPanel({ stats }) {
   const items = [
     {
-      label: 'Total de trámites',
+      label: "Total de trámites",
       value: stats.total,
-      icon: ClipboardList
+      icon: ClipboardList,
     },
     {
-      label: 'Completados',
+      label: "Completados",
       value: stats.completados,
-      icon: CheckCircle
+      icon: CheckCircle,
     },
     {
-      label: 'En proceso',
+      label: "En proceso",
       value: stats.enProceso,
-      icon: Clock
+      icon: Clock,
     },
     {
-      label: 'Pendientes',
-      value: stats.pendientes,
-      icon: PauseCircle
-    }
+      label: "Rechazados",
+      value: stats.rechazados,
+      icon: XCircle,
+    },
   ];
 
   return (

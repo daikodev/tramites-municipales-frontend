@@ -36,42 +36,59 @@ export default function LoginForm() {
       // Guardar token
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
-      
-      // Guardar nombre de usuario si está disponible
-      if (data.name || data.userName || data.user?.name || data.user?.fullName) {
-        localStorage.setItem("userName", data.name || data.userName || data.user?.name || data.user?.fullName);
+
+      // Guardar datos del usuario
+      if (data.name) {
+        localStorage.setItem("firstName", data.name);
       }
-      
+      if (data.lastName) {
+        localStorage.setItem("lastName", data.lastName);
+      }
+
+      // Guardar nombre completo
+      const fullName =
+        data.name && data.lastName
+          ? `${data.name} ${data.lastName}`
+          : data.name ||
+            data.userName ||
+            data.user?.name ||
+            data.user?.fullName ||
+            "";
+
+      if (fullName) {
+        localStorage.setItem("userName", fullName);
+      }
+
       // Extraer userId del token JWT
       const payload = decodeJWT(data.token);
       if (payload) {
         // Buscar userId en diferentes campos posibles del JWT
         let userId = null;
-        
+
         // Intentar obtener de campos comunes
         if (payload.userId) {
           userId = payload.userId;
         } else if (payload.id) {
           userId = payload.id;
-        } else if (payload.sub && !payload.sub.includes('@')) {
+        } else if (payload.sub && !payload.sub.includes("@")) {
           // sub podría ser el email o el userId
           userId = payload.sub;
         }
-        
+
         if (userId) {
           localStorage.setItem("userId", userId.toString());
-          console.log('UserId extraído del token:', userId);
+          console.log("UserId extraído del token:", userId);
         } else {
-          console.warn('No se pudo extraer userId del token');
+          console.warn("No se pudo extraer userId del token");
         }
       }
-      
+
       // Si el backend también envía userId directamente, tiene prioridad
       if (data.userId) {
         localStorage.setItem("userId", data.userId.toString());
-        console.log('UserId del backend:', data.userId);
+        console.log("UserId del backend:", data.userId);
       }
-      
+
       router.push("/dasboard");
     } catch (err) {
       setError(err?.message || "Error al iniciar sesión");
@@ -115,7 +132,9 @@ export default function LoginForm() {
           type="button"
           onClick={() => setShowPassword((v) => !v)}
           className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[#111] hover:opacity-80"
-          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          aria-label={
+            showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+          }
         >
           {showPassword ? (
             <Eye className="h-[18px] w-[18px]" />
@@ -132,12 +151,16 @@ export default function LoginForm() {
           mt-6
           text-sm
           h-[30px] w-full
-          rounded-[4px]
+          rounded-md
+          py-5
           bg-[#0b3a77] text-white font-semibold
           flex items-center justify-center gap-2
           shadow-[0_4px_0_rgba(0,0,0,0.18)]
-          hover:brightness-95 transition
+          hover:brightness-95
           disabled:opacity-70 disabled:cursor-not-allowed
+          cursor-pointer
+          scale-100 active:scale-95
+          transition-all ease-in-out
         "
       >
         <LogIn className="h-[18px] w-[18px]" />

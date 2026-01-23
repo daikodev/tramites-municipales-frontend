@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useRouter } from "next/navigation";
 import Header from "@/components/dashboard/Header";
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
@@ -8,17 +8,18 @@ import Modal from "@/components/ui/Modal";
 import TramiteTypeSelector from "@/components/tramites/TramiteTypeSelector";
 import FileUploadModal from "@/components/tramites/FileUpLoadModal";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
-
   const router = useRouter();
+  useAuth();
   const [modalStep, setModalStep] = useState(null);
   const [selectedTramite, setSelectedTramite] = useState(null);
   const [tramites, setTramites] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (modalStep === 'select') {
+    if (modalStep === "select") {
       cargarTramites();
     }
   }, [modalStep]);
@@ -26,16 +27,16 @@ export default function DashboardPage() {
   async function cargarTramites() {
     try {
       setLoading(true);
-      const response = await fetch('/api/procedures');
+      const response = await fetch("/api/procedures");
       const data = await response.json();
-      
+
       if (response.ok) {
         setTramites(data);
       } else {
-        console.error('Error al cargar trámites:', data.message);
+        console.error("Error al cargar trámites:", data.message);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -47,29 +48,29 @@ export default function DashboardPage() {
   }
 
   function handleVerHistorial() {
-    router.push('/dasboard/tramites/historial');
+    router.push("/dasboard/tramites/historial");
   }
 
   async function handleSelectTramite(tramite) {
     try {
       // Limpiar estado anterior antes de iniciar un nuevo trámite
-      localStorage.removeItem('applicationId');
-      localStorage.removeItem('currentRequisitos');
-      localStorage.removeItem('uploadProgress');
-      localStorage.removeItem('tramiteFormData');
-      
+      localStorage.removeItem("applicationId");
+      localStorage.removeItem("currentRequisitos");
+      localStorage.removeItem("uploadProgress");
+      localStorage.removeItem("tramiteFormData");
+
       setSelectedTramite(tramite);
       // Guardar información del trámite seleccionado
-      localStorage.setItem('selectedTramite', JSON.stringify(tramite));
-      localStorage.setItem('tramiteCost', tramite.cost || tramite.precio || 0);
-      setModalStep('upload');
+      localStorage.setItem("selectedTramite", JSON.stringify(tramite));
+      localStorage.setItem("tramiteCost", tramite.cost || tramite.precio || 0);
+      setModalStep("upload");
     } catch (error) {
-      console.error('Error al seleccionar trámite:', error);
+      console.error("Error al seleccionar trámite:", error);
     }
   }
 
   function handleBackToSelection() {
-    setModalStep('select');
+    setModalStep("select");
     setSelectedTramite(null);
   }
 
@@ -90,20 +91,22 @@ export default function DashboardPage() {
         <section className="mb-12">
           <h2 className="text-[28px] font-bold text-black mb-10">Trámites</h2>
 
-          <div className="
+          <div
+            className="
             grid grid-cols-1
-            md:grid-cols-[repeat(3,200px)]
+            md:grid-cols-[repeat(2,200px)]
             gap-x-12 gap-y-10
             md:justify-center
             justify-items-center
-            ">
+            "
+          >
             <TramiteCard
               icon="plus"
               active
               title="Realizar Trámite"
               subtitle="Inicia un nuevo trámite municipal"
               ctaText="Comenzar"
-              onClick={() => setModalStep('select')}
+              onClick={() => setModalStep("select")}
             />
             <TramiteCard
               icon="clock"
@@ -113,12 +116,6 @@ export default function DashboardPage() {
               ctaText="Ver Historial"
               onClick={handleVerHistorial}
             />
-            <TramiteCard
-              icon="gear"
-              title="Preguntas Frecuentes"
-              subtitle="Resuelve tus dudas sobre trámites"
-              ctaText="Ver FAQ"
-            />
           </div>
         </section>
 
@@ -127,8 +124,8 @@ export default function DashboardPage() {
         </section>
 
         <Modal
-          isOpen={modalStep === 'select'} 
-          onClose={closeModal}           
+          isOpen={modalStep === "select"}
+          onClose={closeModal}
           title="Seleccionar Tipo de Trámite"
         >
           {loading ? (
@@ -136,12 +133,15 @@ export default function DashboardPage() {
               <p className="text-sm text-black/50">Cargando trámites...</p>
             </div>
           ) : (
-            <TramiteTypeSelector tramites={tramites} onSelect={handleSelectTramite} />
+            <TramiteTypeSelector
+              tramites={tramites}
+              onSelect={handleSelectTramite}
+            />
           )}
         </Modal>
 
         <Modal
-          isOpen={modalStep === 'upload'}
+          isOpen={modalStep === "upload"}
           onClose={closeModal}
           title="Subir Archivos"
         >

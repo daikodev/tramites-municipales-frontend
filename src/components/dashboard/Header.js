@@ -1,9 +1,9 @@
-'use client'
+"use client";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
@@ -22,28 +22,27 @@ export default function Header() {
   }, [email]);
 
   const navItems = [
-    { href: '/tramites', label: 'Trámites' },
-    { href: '/historial', label: 'Historial' },
-    { href: '/faq', label: 'FAQ' },
+    { href: "/tramites", label: "Trámites" },
+    { href: "/historial", label: "Historial" },
+    { href: "/faq", label: "FAQ" },
   ];
 
   const handleLogout = () => {
     // Limpiar localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('applicationId');
-    localStorage.removeItem('currentRequisitos');
-    localStorage.removeItem('currentApplicationId');
-    
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("applicationId");
+    localStorage.removeItem("currentRequisitos");
+    localStorage.removeItem("currentApplicationId");
+
     // Redirigir al login
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   return (
     <header className="bg-[#0b63c7] text-white shadow-[0_8px_18px_rgba(0,0,0,0.25)]">
       <div className="mx-auto max-w-[1400px] px-4 py-3 flex items-center justify-between">
-
         {/* HAMBURGUESA SOLO MÓVIL */}
         <button
           type="button"
@@ -78,7 +77,7 @@ export default function Header() {
           <span className="text-sm opacity-95">{email}</span>
           <button
             onClick={handleLogout}
-            className="ml-2 p-2 hover:bg-white/20 rounded-md transition-colors"
+            className="ml-2 p-2 hover:bg-white/20 rounded-md transition-colors cursor-pointer scale-100 active:scale-95 ease-in-out"
             aria-label="Cerrar sesión"
             title="Cerrar sesión"
           >
@@ -91,7 +90,6 @@ export default function Header() {
       {isOpen && (
         <div className="md:hidden border-t border-white/15 bg-[#0b63c7]">
           <div className="px-4 py-4 space-y-4">
-
             <div className="bg-white/18 border border-white/25 rounded-lg px-4 py-2">
               <p className="text-sm">{email}</p>
             </div>
