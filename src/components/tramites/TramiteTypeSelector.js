@@ -111,7 +111,7 @@ export default function TramiteTypeSelector({ tramites = [], onSelect }) {
             </p>
             <button
               onClick={() => setShowHelpPopup(false)}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+              className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
             >
               Entendido
             </button>
