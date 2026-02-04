@@ -37,6 +37,12 @@ export default function LoginForm() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
 
+      // Guardar rol
+      const role = data.role || data.user?.role;
+      if (role) {
+        localStorage.setItem("userRole", role);
+      }
+
       // Guardar datos del usuario
       if (data.name) {
         localStorage.setItem("firstName", data.name);
@@ -89,7 +95,11 @@ export default function LoginForm() {
         console.log("UserId del backend:", data.userId);
       }
 
-      router.push("/dasboard");
+      if (role === "ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dasboard");
+      }
     } catch (err) {
       setError(err?.message || "Error al iniciar sesión");
     } finally {

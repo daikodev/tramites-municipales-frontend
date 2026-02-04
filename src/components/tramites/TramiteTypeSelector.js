@@ -55,18 +55,27 @@ export default function TramiteTypeSelector({ tramites = [], onSelect }) {
                   <h3 className="text-[14px] font-semibold text-black leading-snug">
                     {t.name || t.nombre}
                   </h3>
-                  <button
-                    type="button"
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedTramite(t);
                       setShowHelpPopup(true);
                     }}
-                    className="text-blue-600 hover:text-blue-800 transition flex-shrink-0"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedTramite(t);
+                        setShowHelpPopup(true);
+                      }
+                    }}
+                    className="text-blue-600 hover:text-blue-800 transition flex-shrink-0 cursor-pointer"
                     title="Ver requisitos"
                   >
                     <HelpCircle className="h-4 w-4" />
-                  </button>
+                  </span>
                 </div>
                 <p className="text-[12px] text-black/35 leading-snug">
                   {t.description || t.descripcion}
@@ -89,14 +98,16 @@ export default function TramiteTypeSelector({ tramites = [], onSelect }) {
             <h2 className="text-lg font-semibold text-black mb-4">
               Requisitos para {selectedTramite?.name || selectedTramite?.nombre}
             </h2>
-            <p className="text-sm text-black/70 mb-6 leading-relaxed">
+            <p className="text-sm text-black/70 leading-relaxed">
               Para realizar este trámite necesitas:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Documento de identidad válido</li>
-                <li>Comprobante de domicilio</li>
-                <li>Formulario completado</li>
-                <p>Tiempo estimado para la tramitación es de una semana.</p>
-              </ul>
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-black/70">
+              <li>Documento de identidad válido</li>
+              <li>Comprobante de domicilio</li>
+              <li>Formulario completado</li>
+            </ul>
+            <p className="text-sm text-black/70 mt-3 leading-relaxed">
+              Tiempo estimado para la tramitación es de una semana.
             </p>
             <button
               onClick={() => setShowHelpPopup(false)}

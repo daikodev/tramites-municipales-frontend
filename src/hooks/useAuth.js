@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -25,5 +27,13 @@ export function useAuth() {
     return false;
   };
 
-  return { checkAuthError };
+  const getUserRole = () => {
+    return localStorage.getItem("userRole");
+  };
+
+  return { 
+    checkAuthError,
+    getUserRole,
+    isAdmin: () => getUserRole() === 'ADMIN'
+  };
 }
