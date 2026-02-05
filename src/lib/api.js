@@ -6,8 +6,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
  */
 async function handleResponse(response) {
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ 
-      message: 'Error en la petición' 
+    const error = await response.json().catch(() => ({
+      message: "Error en la petición",
     }));
     throw new Error(error.message || `Error ${response.status}`);
   }
@@ -25,20 +25,20 @@ export const tramitesAPI = {
    * @param {File} file - Archivo a subir
    */
   async subirArchivo(applicationId, requirementId, file) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('requirementId', requirementId);
+    formData.append("file", file);
+    formData.append("requirementId", requirementId);
 
     const response = await fetch(
       `${API_URL}/applications/${applicationId}/files`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
-      }
+      },
     );
 
     return handleResponse(response);
@@ -49,17 +49,17 @@ export const tramitesAPI = {
    * @param {string|number} procedureId - ID del procedimiento
    */
   async obtenerRequisitos(procedureId) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(
       `${API_URL}/procedures/${procedureId}/requisitos`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     return handleResponse(response);
@@ -69,13 +69,13 @@ export const tramitesAPI = {
    * Obtener lista de procedimientos/trámites disponibles
    */
   async obtenerProcedimientos() {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/procedures`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -87,13 +87,13 @@ export const tramitesAPI = {
    * @param {number} procedureId - ID del procedimiento
    */
   async crearSolicitud(procedureId) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/applications`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ procedureId }),
     });
@@ -105,13 +105,13 @@ export const tramitesAPI = {
    * Obtener historial de trámites del usuario
    */
   async obtenerHistorial() {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/applications/my`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -123,13 +123,13 @@ export const tramitesAPI = {
    * @param {string|number} applicationId - ID de la solicitud
    */
   async obtenerDetalle(applicationId) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/applications/${applicationId}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -141,17 +141,17 @@ export const tramitesAPI = {
    * @param {string|number} applicationId - ID de la solicitud
    */
   async obtenerResumen(applicationId) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(
       `${API_URL}/applications/${applicationId}/summary`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     return handleResponse(response);
@@ -163,18 +163,18 @@ export const tramitesAPI = {
    * @param {object} paymentData - Datos del pago
    */
   async registrarPago(applicationId, paymentData) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(
       `${API_URL}/applications/${applicationId}/pay`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(paymentData),
-      }
+      },
     );
 
     return handleResponse(response);
@@ -185,17 +185,17 @@ export const tramitesAPI = {
    * @param {string|number} applicationId - ID de la solicitud
    */
   async obtenerHistorialCambios(applicationId) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(
       `${API_URL}/applications/${applicationId}/history`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     return handleResponse(response);
@@ -212,17 +212,17 @@ export const formatosAPI = {
    * @returns {Promise<Blob>} Archivo en formato Blob
    */
   async descargar(formatId) {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/formats/${formatId}/download`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     if (!response.ok) {
-      throw new Error('Error al descargar el formato');
+      throw new Error("Error al descargar el formato");
     }
 
     return response.blob();
@@ -232,13 +232,13 @@ export const formatosAPI = {
    * Obtener lista de formatos disponibles
    */
   async obtenerFormatos() {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     const response = await fetch(`${API_URL}/formats`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -254,15 +254,15 @@ export const authAPI = {
    * Verificar si el token es válido
    */
   async verificarToken() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return false;
 
     try {
       const response = await fetch(`${API_URL}/auth/verify`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
@@ -276,11 +276,74 @@ export const authAPI = {
    * Cerrar sesión
    */
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('currentApplicationId');
-    localStorage.removeItem('currentRequisitos');
-    localStorage.removeItem('applicationId');
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
+    localStorage.removeItem("currentApplicationId");
+    localStorage.removeItem("currentRequisitos");
+    localStorage.removeItem("applicationId");
+    localStorage.removeItem("notificationUnreadCount");
+  },
+};
+
+/**
+ * API para gestión de notificaciones
+ */
+export const notificationsAPI = {
+  /**
+   * Obtener todas las notificaciones del usuario
+   * @returns {Promise<Array>} Lista de notificaciones
+   */
+  async obtenerNotificaciones() {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/notifications`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  /**
+   * Obtener contador de notificaciones no leídas
+   * @returns {Promise<{unreadCount: number}>} Contador de no leídas
+   */
+  async obtenerContadorNoLeidas() {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/notifications/unread-count`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return handleResponse(response);
+  },
+
+  /**
+   * Marcar una notificación como leída
+   * @param {string|number} notificationId - ID de la notificación
+   */
+  async marcarComoLeida(notificationId) {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/notifications/${notificationId}/read`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    return handleResponse(response);
   },
 };
 

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, LogOut } from "lucide-react";
+import NotificationCenter from "./NotificationCenter";
 
 export default function Header() {
   const router = useRouter();
@@ -70,19 +71,25 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-3 bg-white/18 border border-white/25 rounded-lg px-4 py-2">
-          <span className="h-9 w-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-semibold">
-            {initial}
-          </span>
-          <span className="text-sm opacity-95">{email}</span>
-          <button
-            onClick={handleLogout}
-            className="ml-2 p-2 hover:bg-white/20 rounded-md transition-colors cursor-pointer scale-100 active:scale-95 ease-in-out"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+        <div className="hidden md:flex items-center gap-4">
+          {/* Centro de notificaciones */}
+          <NotificationCenter />
+
+          {/* Usuario y logout */}
+          <div className="flex items-center gap-3 bg-white/18 border border-white/25 rounded-lg px-4 py-2">
+            <span className="h-9 w-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center font-semibold">
+              {initial}
+            </span>
+            <span className="text-sm opacity-95">{email}</span>
+            <button
+              onClick={handleLogout}
+              className="ml-2 p-2 hover:bg-white/20 rounded-md transition-colors cursor-pointer scale-100 active:scale-95 ease-in-out"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
