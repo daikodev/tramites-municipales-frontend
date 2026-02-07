@@ -16,15 +16,22 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState('PAGADO');
   const [currentPage, setCurrentPage] = useState({});
+  const [searchCode, setSearchCode] = useState('');
   const ITEMS_PER_PAGE = 6;
 
   const getPaginationKey = () => `${activeTab}`;
 
   const currentPageNum = currentPage[getPaginationKey()] || 1;
 
-  const filteredTramites = (Array.isArray(tramites) ? tramites : []).filter(
-    (tramite) => tramite.status === activeTab
-  );
+  const normalizedSearch = searchCode.trim().toLowerCase();
+  const filteredTramites = (Array.isArray(tramites) ? tramites : [])
+    .filter((tramite) => tramite.status === activeTab)
+    .filter((tramite) => {
+      if (!normalizedSearch) return true;
+      const code = (tramite.code || '').toString().toLowerCase();
+      const citizen = (tramite.userName || '').toString().toLowerCase();
+      return code.includes(normalizedSearch) || citizen.includes(normalizedSearch);
+    });
 
   const totalPages = Math.ceil(filteredTramites.length / ITEMS_PER_PAGE);
   const startIndex = (currentPageNum - 1) * ITEMS_PER_PAGE;
@@ -160,7 +167,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="mb-0 flex flex-wrap justify-center gap-3">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap justify-center gap-3">
         {TABS.map((tab) => {
           const count = tramites.filter((t) => t.status === tab.key).length;
           const isActive = activeTab === tab.key;
@@ -183,6 +191,25 @@ export default function AdminDashboard() {
             </button>
           );
         })}
+        </div>
+        <div className="flex items-center justify-center sm:justify-end">
+          <div className="w-full sm:w-[320px]">
+            <label className="sr-only" htmlFor="codigo-tramite">
+              Buscar por Codigo y Nombre del Tramitante
+            </label>
+            <input
+              id="codigo-tramite"
+              type="search"
+              value={searchCode}
+              onChange={(event) => {
+                setSearchCode(event.target.value);
+                setCurrentPage({ ...currentPage, [activeTab]: 1 });
+              }}
+              placeholder="Buscar por Codigo y Nombre del Tramitante"
+              className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -288,14 +315,15 @@ export default function AdminDashboard() {
 
             {!error &&
               Array.isArray(tramites) &&
-              tramites.filter((tramite) => tramite.status === activeTab).length === 0 && (
+              filteredTramites.length === 0 && (
                 <tr className="h-[240px]">
                   <td className="text-center px-6 py-6 text-sm text-gray-500 align-middle" colSpan={6}>
-                    {activeTab === 'PAGADO' && 'No hay trámites pagados.'}
-                    {activeTab === 'EN_REVISION' && 'No hay trámites en revisión.'}
-                    {activeTab === 'OBSERVADO' && 'No hay trámites observados.'}
-                    {activeTab === 'APROBADO' && 'No hay trámites aprobados.'}
-                    {activeTab === 'RECHAZADO' && 'No hay trámites rechazados.'}
+                    {normalizedSearch && 'No hay trámites con ese codigo.'}
+                    {!normalizedSearch && activeTab === 'PAGADO' && 'No hay trámites pagados.'}
+                    {!normalizedSearch && activeTab === 'EN_REVISION' && 'No hay trámites en revisión.'}
+                    {!normalizedSearch && activeTab === 'OBSERVADO' && 'No hay trámites observados.'}
+                    {!normalizedSearch && activeTab === 'APROBADO' && 'No hay trámites aprobados.'}
+                    {!normalizedSearch && activeTab === 'RECHAZADO' && 'No hay trámites rechazados.'}
                   </td>
                 </tr>
               )}
